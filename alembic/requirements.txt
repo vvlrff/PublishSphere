@@ -1,0 +1,4 @@
+alembic==1.12.0
+
+-r ../shared/requirements/overall.txt
+-r ../shared/requirements/postgresql_sync.txt

@@ -1,0 +1,8 @@
+-r ../shared/requirements/overall.txt
+-r ../shared/requirements/postgresql_async.txt
+-r ../shared/requirements/s3_async.txt
+-r ../shared/requirements/rabbitmq_async.txt
+
+fastapi==0.111.0
+faststream[cli]==0.5.28
+dishka==1.3.0

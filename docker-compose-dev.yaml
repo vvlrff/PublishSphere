@@ -1,0 +1,71 @@
+x-logging:
+  &default-logging
+  driver: "json-file"
+  options:
+    max-size: "1m"
+    max-file: "1"
+    tag: "{{.Name}}"
+
+services:
+  miniapp:
+    build:
+      context: .
+      dockerfile: cms/Dockerfile
+    env_file:
+      - .env
+    # restart: "always"
+    command: uvicorn --factory cms.main.api:create_app --port 7980 --host 0.0.0.0
+    labels:
+      logging: "promtail"
+      logging_jobname: "containerlogs"
+    ports:
+      - "7980:7980"
+    networks:
+      app:
+        # ipv4_address: 172.20.1.100
+    logging: *default-logging
+
+  db:
+    image: postgres:16
+    env_file:
+      - .env
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    labels:
+      logging: "promtail"
+      logging_jobname: "containerlogs"
+    ports:
+      - "5432:5432"
+    networks:
+      app:
+        # ipv4_address: 172.20.1.5
+    logging: *default-logging
+
+  alembic:
+    build:
+      context: .
+      dockerfile: alembic/Dockerfile
+    env_file:
+      - .env
+    command: alembic upgrade heads
+    profiles:
+      - deploy
+    restart: on-failure
+    labels:
+      logging: "promtail"
+      logging_jobname: "containerlogs"
+    networks:
+      - app
+    logging: *default-logging
+
+
+volumes:
+  db_data:
+
+networks:
+  app:
+    name: app
+    driver: bridge
+    # ipam:
+    #   config:
+    #     - subnet: 172.20.0.0/16
